@@ -67,7 +67,8 @@ impl Central for Adapter {
         let filter = DiscoveryFilter {
             service_uuids: filter.services,
             duplicate_data: Some(true),
-            transport: Some(Transport::Auto),
+            transport: Some(Transport::Le),
+            rssi_threshold: Some(-90),
             ..Default::default()
         };
         self.session
