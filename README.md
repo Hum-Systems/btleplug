@@ -14,12 +14,11 @@ btleplug is an async Rust BLE library, supporting Windows 10, macOS, Linux, iOS,
 
 It grew out of several earlier abandoned libraries for various platforms
 ([rumble](https://github.com/mwylde/rumble), [blurmac](https://github.com/servo/devices), etc...),
-with the goal of building a fully cross platform library. Adding support for other platforms such as
-Android is planned.
+with the goal of building a fully cross platform library. If you're curious about how the library grew, [you can read more on that in this blog post](https://nonpolynomial.com/2023/10/30/how-to-beg-borrow-steal-your-way-to-a-cross-platform-bluetooth-le-library/).
 
 btleplug is meant to be _host/central mode only_. If you are interested in peripheral BTLE (i.e.
 acting like a Bluetooth LE device instead of connecting to one), check out
-[bluster](https://github.com/dfrankland/bluster/tree/master/src).
+[bluster](https://github.com/dfrankland/bluster/) or [ble-peripheral-rust](https://github.com/rohitsangwan01/ble-peripheral-rust/).
 
 This library **DOES NOT SUPPORT BLUETOOTH 2/CLASSIC**. There are no plans to add BT2/Classic
 support.
@@ -64,6 +63,8 @@ support.
 | Get Characteristic Notification Event | X       | X           | X     | X       |
 | Read Descriptor                       | X       | X           | X     | X       |
 | Write Descriptor                      | X       | X           | X     | X       |
+| Retrieve MTU                          |         |             |       |         |
+| Retrieve Connection Interval          |         |             |       |         |
 
 ## Library Features
 
@@ -73,7 +74,7 @@ To enable implementation of serde's `Serialize` and `Deserialize` across some co
 
 ```toml
 [dependencies]
-btleplug = { version = "0.10", features = ["serde"] }
+btleplug = { version = "0.11", features = ["serde"] }
 ```
 
 ## Build/Installation Notes for Specific Platforms
@@ -158,15 +159,23 @@ There are also some examples in the Flutter shim listed below.
 
 ### Flutter
 
-While we don't specifically support Flutter in this repo yet, there's a template repo available at
-[https://github.com/trobanga/flutter_btleplug](https://github.com/trobanga/flutter_btleplug). This template has builds for both Android and iOS using btleplug.
+While we don't specifically support Flutter, there's a template repo available at
+[https://github.com/trobanga/flutter_btleplug](https://github.com/trobanga/flutter_btleplug). This
+template has builds for both Android and iOS using btleplug.
+
+As flutter compilation tends to be complex across platforms, we cannot help with flutter build issues.
+
+### Tauri
+
+While we don't specifically support Tauri, there's a plugin available at
+[https://github.com/MnlPhlp/tauri-plugin-blec](https://github.com/MnlPhlp/tauri-plugin-blec). Please note that all Tauri questions should go to the plugin repo before coming here, we cannot help with Tauri issues as none of this project's developers use Tauri.
 
 ## Alternative Libraries
 
 Everyone has different bluetooth needs, so if btleplug doesn't fit yours, try these other libraries by the rust community!
 
-- [Bluey](https://github.com/rib/bluey) - Cross Platform BLE library that takes a different API
-  approach (less Bluez centric)
+- [Bluest](https://github.com/alexmoon/bluest) - Cross Platform BLE library (Windows/macOS/iOS/Linux)
+- [Bluey](https://github.com/rib/bluey) - Cross Platform BLE library (Windows/Android)
 - [Bluer](https://crates.io/crates/bluer) - Official Rust interface for Bluez on Linux, with more
   features since it only supports one platform (we use
   [Bluez-async](https://crates.io/crates/bluez-async) internally.)
