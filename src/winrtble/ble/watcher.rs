@@ -12,10 +12,12 @@
 // Copyright (c) 2014 The Rust Project Developers
 
 use crate::{api::ScanFilter, Error, Result};
-use windows::{Devices::Bluetooth::Advertisement::*, Foundation::TypedEventHandler};
+use windows::{core::Ref, Devices::Bluetooth::Advertisement::*, Foundation::TypedEventHandler};
 
-pub type AdvertismentEventHandler = Box<dyn Fn(&BluetoothLEAdvertisementReceivedEventArgs) + Send>;
+pub type AdvertisementEventHandler =
+    Box<dyn Fn(&BluetoothLEAdvertisementReceivedEventArgs) -> windows::core::Result<()> + Send>;
 
+#[derive(Debug)]
 pub struct BLEWatcher {
     watcher: BluetoothLEAdvertisementWatcher,
 }
@@ -27,38 +29,30 @@ impl From<windows::core::Error> for Error {
 }
 
 impl BLEWatcher {
-    pub fn new() -> Self {
-        let ad = BluetoothLEAdvertisementFilter::new().unwrap();
-        let watcher = BluetoothLEAdvertisementWatcher::Create(&ad).unwrap();
-        BLEWatcher { watcher }
+    pub fn new() -> Result<Self> {
+        let ad = BluetoothLEAdvertisementFilter::new()?;
+        let watcher = BluetoothLEAdvertisementWatcher::Create(&ad)?;
+        Ok(BLEWatcher { watcher })
     }
 
-    pub fn start(&self, filter: ScanFilter, on_received: AdvertismentEventHandler) -> Result<()> {
+    pub fn start(&self, filter: ScanFilter, on_received: AdvertisementEventHandler) -> Result<()> {
         let ScanFilter { services } = filter;
-        let ad = self
-            .watcher
-            .AdvertisementFilter()
-            .unwrap()
-            .Advertisement()
-            .unwrap();
-        let ad_services = ad.ServiceUuids().unwrap();
-        ad_services.Clear().unwrap();
+        let ad = self.watcher.AdvertisementFilter()?.Advertisement()?;
+        let ad_services = ad.ServiceUuids()?;
+        ad_services.Clear()?;
         for service in services {
-            ad_services
-                .Append(windows::core::GUID::from(service.as_u128()))
-                .unwrap();
+            ad_services.Append(windows::core::GUID::from(service.as_u128()))?;
         }
         self.watcher
-            .SetScanningMode(BluetoothLEScanningMode::Active)
-            .unwrap();
-        self.watcher.SetAllowExtendedAdvertisements(true)?;
+            .SetScanningMode(BluetoothLEScanningMode::Active)?;
+        let _ = self.watcher.SetAllowExtendedAdvertisements(true);
         let handler: TypedEventHandler<
             BluetoothLEAdvertisementWatcher,
             BluetoothLEAdvertisementReceivedEventArgs,
         > = TypedEventHandler::new(
-            move |_sender, args: &Option<BluetoothLEAdvertisementReceivedEventArgs>| {
-                if let Some(args) = args {
-                    on_received(args);
+            move |_sender, args: Ref<BluetoothLEAdvertisementReceivedEventArgs>| {
+                if let Ok(args) = args.ok() {
+                    on_received(args)?;
                 }
                 Ok(())
             },

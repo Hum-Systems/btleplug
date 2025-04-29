@@ -47,8 +47,8 @@ fn get_central_state(radio: &Radio) -> CentralState {
 }
 
 impl Adapter {
-    pub(crate) fn new(radio: Radio) -> Self {
-        let watcher = Arc::new(Mutex::new(BLEWatcher::new()));
+    pub(crate) fn new(radio: Radio) -> Result<Self> {
+        let watcher = Arc::new(Mutex::new(BLEWatcher::new()?));
         let manager = Arc::new(AdapterManager::default());
 
         let radio_clone = radio.clone();
@@ -62,11 +62,11 @@ impl Adapter {
             eprintln!("radio.StateChanged error: {}", err);
         }
 
-        Adapter {
+        Ok(Adapter {
             watcher,
             manager,
             radio,
-        }
+        })
     }
 }
 
@@ -87,12 +87,12 @@ impl Central for Adapter {
     }
 
     async fn start_scan(&self, filter: ScanFilter) -> Result<()> {
-        let watcher = self.watcher.lock().unwrap();
+        let watcher = self.watcher.lock().map_err(Into::<Error>::into)?;
         let manager = self.manager.clone();
         watcher.start(
             filter,
             Box::new(move |args| {
-                let bluetooth_address = args.BluetoothAddress().unwrap();
+                let bluetooth_address = args.BluetoothAddress()?;
                 let address: BDAddr = bluetooth_address.try_into().unwrap();
                 if let Some(mut entry) = manager.peripheral_mut(&address.into()) {
                     entry.value_mut().update_properties(args);
@@ -103,13 +103,14 @@ impl Central for Adapter {
                     manager.add_peripheral(peripheral);
                     manager.emit(CentralEvent::DeviceDiscovered(address.into()));
                 }
+                Ok(())
             }),
         )
     }
 
     async fn stop_scan(&self) -> Result<()> {
-        let watcher = self.watcher.lock().unwrap();
-        watcher.stop().unwrap();
+        let watcher = self.watcher.lock().map_err(Into::<Error>::into)?;
+        watcher.stop()?;
         Ok(())
     }
 

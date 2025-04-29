@@ -137,6 +137,7 @@ fn get_poll_result<'a: 'b, 'b>(
         .result()?
 }
 
+#[derive(Debug)]
 struct PeripheralShared {
     services: BTreeSet<Service>,
     characteristics: BTreeSet<Characteristic>,
@@ -164,7 +165,7 @@ impl Peripheral {
         })
     }
 
-    pub(crate) fn report_properties(&self, mut properties: PeripheralProperties) {
+    pub(crate) fn report_properties(&self, properties: PeripheralProperties) {
         let mut guard = self.shared.lock().unwrap();
 
         guard.properties = Some(properties);
@@ -217,7 +218,7 @@ impl api::Peripheral for Peripheral {
     }
 
     async fn properties(&self) -> Result<Option<PeripheralProperties>> {
-        let guard = self.shared.lock().unwrap();
+        let guard = self.shared.lock().map_err(Into::<Error>::into)?;
         Ok((&guard.properties).clone())
     }
 
@@ -303,7 +304,7 @@ impl api::Peripheral for Peripheral {
                     characteristics,
                 })
             }
-            let mut guard = self.shared.lock().unwrap();
+            let mut guard = self.shared.lock().map_err(Into::<Error>::into)?;
             guard.services = BTreeSet::from_iter(peripheral_services.clone());
             guard.characteristics = BTreeSet::from_iter(peripheral_characteristics.clone());
             Ok(())
