@@ -121,6 +121,11 @@ impl Central for Adapter {
         }
         Ok(get_central_state(powered))
     }
+
+    async fn adapter_discovering(&self) -> Result<bool> {
+        let adapter_info = self.session.get_adapter_info(&self.adapter).await?;
+        Ok(adapter_info.discovering)
+    }
 }
 
 impl From<BluetoothError> for Error {

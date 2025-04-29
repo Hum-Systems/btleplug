@@ -377,6 +377,9 @@ pub trait Central: Send + Sync + Clone {
 
     /// Get information about the Bluetooth adapter state.
     async fn adapter_state(&self) -> Result<CentralState>;
+
+    /// Get information about whether the bluetooth adapter is currently discovering
+    async fn adapter_discovering(&self) -> Result<bool>;
 }
 
 /// The Manager is the entry point to the library, providing access to all the Bluetooth adapters on
