@@ -63,12 +63,17 @@ impl Central for Adapter {
         Ok(Box::pin(initial_events.chain(events)))
     }
 
-    async fn start_scan(&self, filter: ScanFilter) -> Result<()> {
+    async fn start_scan(
+        &self,
+        filter: ScanFilter,
+        duplicates: Option<bool>,
+        rssi_threshold: Option<i16>,
+    ) -> Result<()> {
         let filter = DiscoveryFilter {
             service_uuids: filter.services,
-            duplicate_data: Some(true),
+            duplicate_data: duplicates,
             transport: Some(Transport::Le),
-            rssi_threshold: Some(-90),
+            rssi_threshold,
             ..Default::default()
         };
         self.session

@@ -354,7 +354,12 @@ pub trait Central: Send + Sync + Clone {
     /// ignore (parts of) the filter and make additional devices available, other implementations
     /// might require at least one filter for security reasons. Cross-platform code should provide
     /// a filter, but must be able to handle devices, which do not fit into the filter.
-    async fn start_scan(&self, filter: ScanFilter) -> Result<()>;
+    async fn start_scan(
+        &self,
+        filter: ScanFilter,
+        duplicates: Option<bool>,
+        rssi_threshold: Option<i16>,
+    ) -> Result<()>;
 
     /// Stops scanning for BLE devices.
     async fn stop_scan(&self) -> Result<()>;

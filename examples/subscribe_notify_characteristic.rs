@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
     for adapter in adapter_list.iter() {
         println!("Starting scan...");
         adapter
-            .start_scan(ScanFilter::default())
+            .start_scan(ScanFilter::default(), None, None)
             .await
             .expect("Can't scan BLE adapter for connected devices...");
         time::sleep(Duration::from_secs(2)).await;

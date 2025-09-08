@@ -44,7 +44,9 @@ async fn main() -> anyhow::Result<()> {
         .expect("Unable to find adapters.");
 
     // start scanning for devices
-    central.start_scan(ScanFilter::default()).await?;
+    central
+        .start_scan(ScanFilter::default(), None, None)
+        .await?;
     // instead of waiting, you can use central.events() to get a stream which will
     // notify you of new devices, for an example of that see examples/event_driven_discovery.rs
     time::sleep(Duration::from_secs(2)).await;
