@@ -63,17 +63,15 @@ impl Central for Adapter {
         Ok(Box::pin(initial_events.chain(events)))
     }
 
-    async fn start_scan(
-        &self,
-        filter: ScanFilter,
-        duplicates: Option<bool>,
-        rssi_threshold: Option<i16>,
-    ) -> Result<()> {
+    // note: bluez cannot handle multiple scan requests with different scan filters
+    // using filters is therefore discouraged
+    // scan request without filters will forward events to all applications
+    async fn start_scan(&self) -> Result<()> {
         let filter = DiscoveryFilter {
-            service_uuids: filter.services,
-            duplicate_data: duplicates,
+            service_uuids: vec![],
+            duplicate_data: Some(true),
             transport: Some(Transport::Le),
-            rssi_threshold,
+            rssi_threshold: None,
             ..Default::default()
         };
         self.session

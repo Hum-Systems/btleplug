@@ -31,9 +31,7 @@ async fn main() -> anyhow::Result<()> {
     let mut events = central.events().await?;
 
     // start scanning for devices
-    central
-        .start_scan(ScanFilter::default(), None, None)
-        .await?;
+    central.start_scan().await?;
 
     // Print based on whatever the event receiver outputs. Note that the event
     // receiver blocks, so in a real program, this should be run in its own
